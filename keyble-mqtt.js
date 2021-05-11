@@ -143,6 +143,7 @@ const run_mqtt_client = async (address, user_id, user_key, {
 		address: canonical_address,
 		user_id: user_id,
 		user_key: user_key,
+		auto_disconnect_time: 0
 	});
 	keyble_device.on('status_update', async (lock_state) => {
 		await publish_mqtt_message_async(mqtt_client, device_status_topic, JSON.stringify(lock_state), {
