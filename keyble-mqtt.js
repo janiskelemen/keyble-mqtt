@@ -150,6 +150,21 @@ const run_mqtt_client = async (address, user_id, user_key, {
 			qos: qos,
 			retain: false,
 		});
+		const ios_lock_status_string = {
+					'UNKNOWN': 'UNKNOWN',
+					'MOVING': 'UNKNOWN',
+					'UNLOCKED': 'UNSECURED',
+					'LOCKED': 'SECURED',
+					'OPENED': 'UNSECURED',
+				}[lock_state.lock_status];
+		await publish_mqtt_message_async(mqtt_client, device_status_topic+'/state', ios_lock_status_string, {
+			qos: qos,
+			retain: false,
+		});
+		await publish_mqtt_message_async(mqtt_client, device_status_topic+'/batterylow', lock_state.battery_low, {
+			qos: qos,
+			retain: false,
+		});
 	});
 	mqtt_client.on('message', async (topic, message_buffer) => {
 		const message = message_buffer.toString().trim();
@@ -165,8 +180,20 @@ const run_mqtt_client = async (address, user_id, user_key, {
 					case 'open':
 						await keyble_device.open();
 						break;
+					case 'U':
+						await keyble_device.open();
+						break;
+					case 'S':
+						await keyble_device.lock();
+						break;
 					case 'toggle':
 						await keyble_device.toggle();
+						break;
+					case 'status':
+						await keyble_device.request_status();
+						break;
+					case 'lowbattery':
+						await keyble_device.request_status();
 						break;
 					default:
 						// TODO handle or ignore invalid/unknown command?
